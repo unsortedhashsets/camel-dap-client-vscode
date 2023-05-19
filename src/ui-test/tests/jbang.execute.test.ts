@@ -20,9 +20,10 @@ import {
     disconnectDebugger,
     killTerminal,
     executeCommandInContextMenu,
+    executeCommand,
 } from '../utils';
 
-(process.platform === 'darwin' ? describe.skip : describe)('JBang commands execution through context menu', function () {
+describe('JBang commands execution', function () {
     this.timeout(240000);
 
     let editorView: EditorView;
@@ -54,12 +55,24 @@ import {
         await killTerminal();
     });
 
-    it(`Execute command '${CAMEL_RUN_ACTION_LABEL}' in context menu`, async function () {
+    it(`Execute command '${CAMEL_RUN_ACTION_LABEL}' in command palette`, async function () {
+        await executeCommand(CAMEL_RUN_ACTION_LABEL);
+        await waitUntilTerminalHasText(driver, TEST_ARRAY_RUN);
+    });
+
+    it(`Execute command '${CAMEL_RUN_DEBUG_ACTION_LABEL}' in command palette`, async function () {
+        await executeCommand(CAMEL_RUN_DEBUG_ACTION_LABEL);
+        await waitUntilTerminalHasText(driver, TEST_ARRAY_RUN_DEBUG);
+        await (await new ActivityBar().getViewControl('Run and Debug') as ViewControl).closeView();
+        await disconnectDebugger(driver);
+    });
+
+    (process.platform === 'darwin' ? it.skip : it)(`Execute command '${CAMEL_RUN_ACTION_LABEL}' in context menu`, async function () {
         await executeCommandInContextMenu(CAMEL_RUN_ACTION_LABEL, CAMEL_ROUTE_YAML_WITH_SPACE);
         await waitUntilTerminalHasText(driver, TEST_ARRAY_RUN);
     });
 
-    it(`Execute command '${CAMEL_RUN_DEBUG_ACTION_LABEL}' in context menu`, async function () {
+    (process.platform === 'darwin' ? it.skip : it)(`Execute command '${CAMEL_RUN_DEBUG_ACTION_LABEL}' in context menu`, async function () {
         await executeCommandInContextMenu(CAMEL_RUN_DEBUG_ACTION_LABEL, CAMEL_ROUTE_YAML_WITH_SPACE);
         await waitUntilTerminalHasText(driver, TEST_ARRAY_RUN_DEBUG);
         await (await new ActivityBar().getViewControl('Run and Debug') as ViewControl).closeView();
