@@ -1,8 +1,11 @@
 import {
     BottomBarPanel,
+    ContextMenuItem,
     DebugToolbar,
     InputBox,
+    SideBarView,
     TerminalView,
+    ViewItem,
     WebDriver,
     Workbench,
     until
@@ -41,6 +44,17 @@ export async function executeCommand(command: string): Promise<void> {
         }
     }
     throw new Error(`Command '${command}' not found in the command palette`);
+}
+
+export async function executeCommandInContextMenu(command: string, route: string): Promise<void> {
+    const item = await (await new SideBarView().getContent().getSection('resources')).findItem(route) as ViewItem;
+    const menu = await item.openContextMenu();
+    const button = await menu.getItem(command);
+    if (button instanceof ContextMenuItem) {
+        await button.select();
+    } else {
+        throw new Error(`Button ${command} not found in context menu of the route ${route}`);
+    }
 }
 
 /**
