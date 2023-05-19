@@ -1,19 +1,25 @@
 import * as path from 'path';
 import {
+    ActivityBar,
     after,
     before,
-    BottomBarPanel,
     EditorView,
     SideBarView,
+    ViewControl,
+    ViewSection,
     VSBrowser,
     WebDriver,
 } from 'vscode-uitests-tooling';
 import {
     CAMEL_ROUTE_YAML_WITH_SPACE,
     CAMEL_RUN_ACTION_LABEL,
+    CAMEL_RUN_DEBUG_ACTION_LABEL,
     waitUntilTerminalHasText,
     TEST_ARRAY_RUN,
-    executeCommand
+    TEST_ARRAY_RUN_DEBUG,
+    executeCommand,
+    disconnectDebugger,
+    killTerminal,
 } from '../utils';
 
 describe('JBang commands execution through command palette', function () {
@@ -31,11 +37,12 @@ describe('JBang commands execution through command palette', function () {
     });
 
     beforeEach('Before each test', async function () {
+        await (await new ActivityBar().getViewControl('Explorer') as ViewControl).openView();
         await VSBrowser.instance.openResources(path.resolve('src', 'ui-test', 'resources'));
         await VSBrowser.instance.waitForWorkbench();
 
-        const section = await new SideBarView().getContent().getSection('resources');
-        await section?.openItem(CAMEL_ROUTE_YAML_WITH_SPACE);
+        const section = await new SideBarView().getContent().getSection('resources') as ViewSection;
+        await section.openItem(CAMEL_ROUTE_YAML_WITH_SPACE);
 
         editorView = new EditorView();
         await driver.wait(async function () {
@@ -44,14 +51,18 @@ describe('JBang commands execution through command palette', function () {
     });
 
     afterEach('After each test', async function () {
-        const bottomBarPanel = new BottomBarPanel();
-        const terminal = await bottomBarPanel.openTerminalView();
-        await terminal.killTerminal();
-        await bottomBarPanel.toggle(false);
+        await killTerminal();
     });
 
     it(`Execute command '${CAMEL_RUN_ACTION_LABEL}' in command palette`, async function () {
         await executeCommand(CAMEL_RUN_ACTION_LABEL);
         await waitUntilTerminalHasText(driver, TEST_ARRAY_RUN);
+    });
+
+    it(`Execute command '${CAMEL_RUN_DEBUG_ACTION_LABEL}' in command palette`, async function () {
+        await executeCommand(CAMEL_RUN_DEBUG_ACTION_LABEL);
+        await waitUntilTerminalHasText(driver, TEST_ARRAY_RUN_DEBUG);
+        await (await new ActivityBar().getViewControl('Run and Debug') as ViewControl).closeView();
+        await disconnectDebugger(driver);
     });
 });
