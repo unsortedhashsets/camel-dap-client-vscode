@@ -1,11 +1,13 @@
 import { expect } from 'chai';
 import * as path from 'path';
 import {
+    ActivityBar,
     after,
     before,
     BottomBarPanel,
     EditorView,
     SideBarView,
+    ViewControl,
     VSBrowser,
     WebDriver,
     WebElement,
@@ -28,6 +30,7 @@ describe('Camel file editor test', function () {
         let editorView: EditorView;
 
         before('Before setup', async function () {
+            await (await new ActivityBar().getViewControl('Explorer') as ViewControl).openView();
             driver = VSBrowser.instance.driver;
             await VSBrowser.instance.openResources(path.resolve('src', 'ui-test', 'resources'));
             await VSBrowser.instance.waitForWorkbench();

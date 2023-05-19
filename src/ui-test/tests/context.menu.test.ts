@@ -1,8 +1,10 @@
 import { expect } from 'chai';
 import * as path from 'path';
 import {
+    ActivityBar,
     before,
     SideBarView,
+    ViewControl,
     ViewItem,
     VSBrowser,
 } from 'vscode-extension-tester';
@@ -19,6 +21,7 @@ import {
         this.timeout(180000);
 
         before('Before setup', async function () {
+            await (await new ActivityBar().getViewControl('Explorer') as ViewControl).openView();
             await VSBrowser.instance.openResources(path.resolve('src', 'ui-test', 'resources'));
             await VSBrowser.instance.waitForWorkbench();
 
